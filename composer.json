@@ -1,0 +1,55 @@
+{
+    "name": "takepart-media/statamic-sop",
+    "description": "Global SOP consent gate for the Statamic Control Panel.",
+    "type": "statamic-addon",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "takepart media",
+            "email": "it@takepart-media.de",
+            "homepage": "https://www.takepart-media.de",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "it@takepart-media.de"
+    },
+    "require": {
+        "php": "^8.2",
+        "statamic/cms": "^6.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.8 || ^11.0",
+        "phpunit/phpunit": "^12.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "TakepartMedia\\StatamicSop\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TakepartMedia\\StatamicSop\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pixelfear/composer-dist-plugin": true
+        },
+        "sort-packages": true
+    },
+    "extra": {
+        "statamic": {
+            "name": "SOP",
+            "slug": "sop",
+            "description": "Global SOP consent gate for the Statamic Control Panel."
+        },
+        "laravel": {
+            "providers": [
+                "TakepartMedia\\StatamicSop\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
