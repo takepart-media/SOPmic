@@ -57,6 +57,8 @@ class SopConsentController extends CpController
             'sop_id' => ['required', 'integer'],
             'sop_version_id' => ['required', 'integer'],
             'confirmed' => ['required', 'accepted'],
+        ], [], [
+            'confirmed' => __('sop::messages.validation.attributes.confirmed'),
         ]);
 
         $user = User::current();

@@ -12,27 +12,27 @@
 
         <div class="mb-4 flex items-baseline justify-between gap-2">
             <h1 class="text-2xl font-bold">{{ __('sop::messages.consent.title') }}</h1>
-            <span class="text-sm text-gray-500">
+            <span class="text-sm text-gray-500 dark:text-gray-400">
                 {{ __('sop::messages.consent.progress', ['position' => $position, 'total' => $total]) }}
             </span>
         </div>
 
-        <p class="mb-4 text-sm text-gray-500">{{ __('sop::messages.consent.intro') }}</p>
+        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ __('sop::messages.consent.intro') }}</p>
 
         @if (session('error'))
-            <div class="mb-4 rounded-md bg-red-100 px-4 py-2 text-sm text-red-700">
+            <div class="mb-4 rounded-md bg-red-100 px-4 py-2 text-sm text-red-700 dark:bg-red-300/6 dark:text-red-400">
                 {{ session('error') }}
             </div>
         @endif
 
         @if (session('success'))
-            <div class="mb-4 rounded-md bg-green-100 px-4 py-2 text-sm text-green-700">
+            <div class="mb-4 rounded-md bg-green-100 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
                 {{ session('success') }}
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="mb-4 rounded-md bg-red-100 px-4 py-2 text-sm text-red-700">
+            <div class="mb-4 rounded-md bg-red-100 px-4 py-2 text-sm text-red-700 dark:bg-red-300/6 dark:text-red-400">
                 <ul>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>

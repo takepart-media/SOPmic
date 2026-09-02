@@ -6,7 +6,7 @@
     <div class="max-w-5xl mx-auto px-4 py-8">
 
         <div class="mb-2">
-            <a href="{{ cp_route('sop.index') }}" class="text-sm text-gray-500 underline">
+            <a href="{{ cp_route('sop.index') }}" class="text-sm text-gray-500 underline dark:text-gray-400">
                 {{ __('sop::messages.crud.show.back') }}
             </a>
         </div>
@@ -24,7 +24,7 @@
                 >
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="cursor-pointer text-sm font-medium text-red-600">
+                    <button type="submit" class="cursor-pointer text-sm font-medium text-red-600 dark:text-red-400">
                         {{ __('sop::messages.crud.delete') }}
                     </button>
                 </form>
@@ -32,7 +32,7 @@
         </div>
 
         @if (session('success'))
-            <div class="mb-4 rounded-md bg-green-100 px-4 py-2 text-sm text-green-700">
+            <div class="mb-4 rounded-md bg-green-100 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
                 {{ session('success') }}
             </div>
         @endif
@@ -47,7 +47,7 @@
                 </div>
             </div>
         @else
-            <p class="mb-8 text-sm text-gray-500">{{ __('sop::messages.crud.show.no_version') }}</p>
+            <p class="mb-8 text-sm text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.no_version') }}</p>
         @endif
 
         {{-- Version history --}}
@@ -56,11 +56,11 @@
         <div class="mb-8 overflow-x-auto rounded-lg border border-gray-300 dark:border-gray-700">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700">
-                        <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.show.history_version') }}</th>
-                        <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.show.history_created') }}</th>
-                        <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.show.history_author') }}</th>
-                        <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.show.history_hash') }}</th>
+                    <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700 dark:bg-gray-900">
+                        <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.history_version') }}</th>
+                        <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.history_created') }}</th>
+                        <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.history_author') }}</th>
+                        <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.history_hash') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,14 +69,14 @@
                             <td class="px-3 py-2">
                                 {{ $version->version_no }}
                                 @if ($sop->current_version_id === $version->id)
-                                    <span class="ml-1 inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                                    <span class="ml-1 inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">
                                         {{ __('sop::messages.crud.index.status_active') }}
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-3 py-2 text-gray-500">{{ $version->created_at?->format('Y-m-d H:i') }}</td>
+                            <td class="px-3 py-2 text-gray-500 dark:text-gray-400">{{ $version->created_at?->format('Y-m-d H:i') }}</td>
                             <td class="px-3 py-2">{{ $emails[$version->created_by] ?? $version->created_by ?? '—' }}</td>
-                            <td class="px-3 py-2 font-mono text-xs text-gray-500">{{ substr($version->content_hash, 0, 8) }}</td>
+                            <td class="px-3 py-2 font-mono text-xs text-gray-500 dark:text-gray-400">{{ substr($version->content_hash, 0, 8) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -91,28 +91,28 @@
             @php $consents = $consentsByVersion->get($version->id, collect()); @endphp
 
             <div class="mb-6">
-                <h3 class="mb-2 text-sm font-medium text-gray-500">
+                <h3 class="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                     {{ __('sop::messages.crud.show.history_version') }} {{ $version->version_no }}
                 </h3>
 
                 @if ($consents->isEmpty())
-                    <p class="text-sm text-gray-500">{{ __('sop::messages.crud.show.audit_empty') }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.audit_empty') }}</p>
                 @else
                     <div class="overflow-x-auto rounded-lg border border-gray-300 dark:border-gray-700">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700">
-                                    <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.show.audit_user') }}</th>
-                                    <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.show.audit_consented_at') }}</th>
-                                    <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.show.audit_ip') }}</th>
+                                <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700 dark:bg-gray-900">
+                                    <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.audit_user') }}</th>
+                                    <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.audit_consented_at') }}</th>
+                                    <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.audit_ip') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($consents as $consent)
                                     <tr class="border-b border-gray-300 last:border-b-0 dark:border-gray-700">
                                         <td class="px-3 py-2">{{ $emails[$consent->user_id] ?? $consent->user_id }}</td>
-                                        <td class="px-3 py-2 text-gray-500">{{ $consent->consented_at?->format('Y-m-d H:i') }}</td>
-                                        <td class="px-3 py-2 font-mono text-xs text-gray-500">{{ $consent->ip ?? '—' }}</td>
+                                        <td class="px-3 py-2 text-gray-500 dark:text-gray-400">{{ $consent->consented_at?->format('Y-m-d H:i') }}</td>
+                                        <td class="px-3 py-2 font-mono text-xs text-gray-500 dark:text-gray-400">{{ $consent->ip ?? '—' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

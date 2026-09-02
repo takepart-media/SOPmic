@@ -17,10 +17,10 @@
         name="title"
         id="title"
         value="{{ old('title', $sop->title ?? '') }}"
-        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800"
+        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
     >
     @error('title')
-        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
     @enderror
 </div>
 
@@ -28,15 +28,15 @@
     <label for="content" class="mb-1 block text-sm font-medium">
         {{ __('sop::messages.crud.form.content') }}
     </label>
-    <p class="mb-1 text-xs text-gray-500">{{ __('sop::messages.crud.form.content_hint') }}</p>
+    <p class="mb-1 text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.content_hint') }}</p>
     <textarea
         name="content"
         id="content"
         rows="15"
-        class="w-full resize-y rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm dark:border-gray-700 dark:bg-gray-800"
+        class="w-full resize-y rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
     >{{ old('content', $sop->currentVersion->content ?? '') }}</textarea>
     @error('content')
-        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
     @enderror
 </div>
 
@@ -45,7 +45,7 @@
         <input type="checkbox" name="active" value="1" @checked(old('active', $sop->active ?? false))>
         <span>{{ __('sop::messages.crud.form.active') }}</span>
     </label>
-    <p class="mt-1 text-xs text-gray-500">{{ __('sop::messages.crud.form.active_hint') }}</p>
+    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.active_hint') }}</p>
 </div>
 
 <div class="mb-6">
@@ -58,10 +58,10 @@
         id="sort_order"
         min="0"
         value="{{ old('sort_order', $sop->sort_order ?? 0) }}"
-        class="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800"
+        class="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
     >
     @error('sort_order')
-        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
     @enderror
 </div>
 
@@ -72,7 +72,7 @@
     >
         {{ __('sop::messages.crud.form.save') }}
     </button>
-    <a href="{{ cp_route('sop.index') }}" class="text-sm text-gray-500 underline">
+    <a href="{{ cp_route('sop.index') }}" class="text-sm text-gray-500 underline dark:text-gray-400">
         {{ __('sop::messages.crud.form.cancel') }}
     </a>
 </div>

@@ -31,6 +31,15 @@ return [
         'manage' => 'Manage SOPs',
     ],
 
+    'validation' => [
+        'attributes' => [
+            'title' => 'title',
+            'content' => 'content',
+            'sort_order' => 'sort order',
+            'confirmed' => 'confirmation',
+        ],
+    ],
+
     'crud' => [
         'created' => 'SOP created.',
         'updated' => 'SOP saved.',

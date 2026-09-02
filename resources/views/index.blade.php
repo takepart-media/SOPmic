@@ -16,23 +16,23 @@
         </div>
 
         @if (session('success'))
-            <div class="mb-4 rounded-md bg-green-100 px-4 py-2 text-sm text-green-700">
+            <div class="mb-4 rounded-md bg-green-100 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
                 {{ session('success') }}
             </div>
         @endif
 
         @if ($sops->isEmpty())
-            <p class="text-sm text-gray-500">{{ __('sop::messages.crud.index.empty') }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.index.empty') }}</p>
         @else
             <div class="overflow-x-auto rounded-lg border border-gray-300 dark:border-gray-700">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700">
-                            <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.index.column_title') }}</th>
-                            <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.index.column_status') }}</th>
-                            <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.index.column_version') }}</th>
-                            <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.index.column_consents') }}</th>
-                            <th class="px-3 py-2 font-medium text-gray-500">{{ __('sop::messages.crud.index.column_updated') }}</th>
+                        <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700 dark:bg-gray-900">
+                            <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.index.column_title') }}</th>
+                            <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.index.column_status') }}</th>
+                            <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.index.column_version') }}</th>
+                            <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.index.column_consents') }}</th>
+                            <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.index.column_updated') }}</th>
                             <th class="px-3 py-2"></th>
                         </tr>
                     </thead>
@@ -46,18 +46,18 @@
                                 </td>
                                 <td class="px-3 py-2">
                                     @if ($sop->active)
-                                        <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                                        <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">
                                             {{ __('sop::messages.crud.index.status_active') }}
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
+                                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                             {{ __('sop::messages.crud.index.status_inactive') }}
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2">{{ $sop->currentVersion?->version_no ?? '—' }}</td>
                                 <td class="px-3 py-2">{{ $sop->consent_count }}</td>
-                                <td class="px-3 py-2 text-gray-500">{{ $sop->updated_at?->diffForHumans() }}</td>
+                                <td class="px-3 py-2 text-gray-500 dark:text-gray-400">{{ $sop->updated_at?->diffForHumans() }}</td>
                                 <td class="px-3 py-2 text-right space-x-2">
                                     <a href="{{ cp_route('sop.edit', $sop) }}" class="text-sm underline">
                                         {{ __('sop::messages.crud.edit') }}

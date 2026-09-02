@@ -31,6 +31,15 @@ return [
         'manage' => 'SOPs verwalten',
     ],
 
+    'validation' => [
+        'attributes' => [
+            'title' => 'Titel',
+            'content' => 'Inhalt',
+            'sort_order' => 'Reihenfolge',
+            'confirmed' => 'Bestätigung',
+        ],
+    ],
+
     'crud' => [
         'created' => 'SOP erstellt.',
         'updated' => 'SOP gespeichert.',

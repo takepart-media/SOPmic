@@ -60,11 +60,12 @@ class SopController extends CpController
             ->get()
             ->groupBy('sop_version_id');
 
-        // Resolved once for every user who shows up in the audit trail, rather
-        // than once per consent row.
+        // Resolved once for every user who shows up in the audit trail —
+        // consenting users and version authors alike — rather than per row.
         $emails = SopConsent::query()
             ->where('sop_id', $sop->id)
             ->pluck('user_id')
+            ->merge($versions->pluck('created_by')->filter())
             ->unique()
             ->mapWithKeys(fn (string $userId) => [$userId => User::find($userId)?->email() ?? $userId]);
 
@@ -118,6 +119,10 @@ class SopController extends CpController
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
+        ], [], [
+            'title' => __('sop::messages.validation.attributes.title'),
+            'content' => __('sop::messages.validation.attributes.content'),
+            'sort_order' => __('sop::messages.validation.attributes.sort_order'),
         ]);
 
         $data['active'] = $request->boolean('active');
