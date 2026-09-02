@@ -3,6 +3,8 @@
 namespace TakepartMedia\StatamicSop\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Database\Console\Migrations\MigrateCommand;
+use Illuminate\Foundation\Console\VendorPublishCommand;
 use Statamic\Console\RunsInPlease;
 use TakepartMedia\StatamicSop\Support\SopDatabase;
 
@@ -36,7 +38,11 @@ class InstallCommand extends Command
 
         $this->line('  Running migrations on the `sop` connection...');
 
-        $this->call('migrate', [
+        // Called by class, not by name: under `php please` the console
+        // application only knows Statamic's commands, and Symfony's
+        // abbreviation matching resolves the name `migrate` to
+        // `migrate-dates-to-utc` there. A class name skips that lookup.
+        $this->call(MigrateCommand::class, [
             '--database' => 'sop',
             '--path' => __DIR__.'/../../database/migrations',
             '--realpath' => true,
@@ -45,7 +51,7 @@ class InstallCommand extends Command
 
         $this->line('  Publishing config/sop.php...');
 
-        $this->call('vendor:publish', [
+        $this->call(VendorPublishCommand::class, [
             '--tag' => 'sop-config',
             '--force' => false,
         ]);
