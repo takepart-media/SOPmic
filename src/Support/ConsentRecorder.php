@@ -38,6 +38,17 @@ class ConsentRecorder
             throw new InvalidArgumentException('A consent needs an authenticated user.');
         }
 
+        // IP and user agent are personal data (GDPR); the consent is already
+        // proven by user + version + timestamp, so both are dropped here
+        // unless the project explicitly opts in — regardless of the caller.
+        if (! config('sop.audit.ip')) {
+            $ip = null;
+        }
+
+        if (! config('sop.audit.user_agent')) {
+            $userAgent = null;
+        }
+
         return DB::connection('sop')->transaction(function () use ($userId, $sopId, $sopVersionId, $ip, $userAgent) {
             $existing = SopConsent::query()
                 ->where('user_id', $userId)

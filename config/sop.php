@@ -48,4 +48,21 @@ return [
         'groups' => [],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Audit
+    |--------------------------------------------------------------------------
+    |
+    | Whether a consent additionally records the client IP and user agent.
+    | Both are personal data under the GDPR, and user + version + timestamp
+    | already prove the acknowledgment — so both default to off. Enable them
+    | only with a documented legal basis.
+    |
+    */
+
+    'audit' => [
+        'ip' => false,
+        'user_agent' => false,
+    ],
+
 ];

@@ -24,6 +24,8 @@ class ConsentRecorderTest extends TestCase
     #[Test]
     public function it_records_a_consent_for_the_first_pending_sop()
     {
+        config(['sop.audit.ip' => true, 'sop.audit.user_agent' => true]);
+
         $sop = $this->makeSop('First', 'Body', 10);
         $user = $this->makeUser();
 
@@ -191,11 +193,27 @@ class ConsentRecorderTest extends TestCase
     #[Test]
     public function an_over_long_user_agent_is_truncated_to_fit()
     {
+        config(['sop.audit.user_agent' => true]);
+
         $sop = $this->makeSop('First', 'Body');
         $user = $this->makeUser();
 
         $this->recorder->record($user, $sop->id, $sop->current_version_id, null, str_repeat('x', 900));
 
         $this->assertSame(512, mb_strlen(SopConsent::first()->user_agent));
+    }
+
+    #[Test]
+    public function ip_and_user_agent_are_not_stored_by_default()
+    {
+        $sop = $this->makeSop('First', 'Body');
+        $user = $this->makeUser();
+
+        $this->recorder->record($user, $sop->id, $sop->current_version_id, '203.0.113.7', 'Mozilla/5.0');
+
+        $consent = SopConsent::first();
+
+        $this->assertNull($consent->ip);
+        $this->assertNull($consent->user_agent);
     }
 }

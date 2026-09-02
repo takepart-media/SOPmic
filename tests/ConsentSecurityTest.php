@@ -129,8 +129,10 @@ class ConsentSecurityTest extends TestCase
     }
 
     #[Test]
-    public function it_records_the_audit_fields()
+    public function it_records_the_audit_fields_when_opted_in()
     {
+        config(['sop.audit.ip' => true, 'sop.audit.user_agent' => true]);
+
         $this->actingAs($this->user)
             ->withHeader('User-Agent', 'PhpUnit/1.0')
             ->post(cp_route('sop.consent.store'), [

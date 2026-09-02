@@ -55,6 +55,15 @@ return [
         'groups' => [],  // e.g. ['contractors']
     ],
 
+    // Whether a consent additionally records the client IP / user agent.
+    // Both are personal data under the GDPR and off by default — user,
+    // version and timestamp already prove the acknowledgment. Enable only
+    // with a documented legal basis.
+    'audit' => [
+        'ip' => false,
+        'user_agent' => false,
+    ],
+
 ];
 ```
 
