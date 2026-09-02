@@ -104,7 +104,6 @@
                                 <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700 dark:bg-gray-900">
                                     <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.audit_user') }}</th>
                                     <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.audit_consented_at') }}</th>
-                                    <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.audit_ip') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -112,7 +111,6 @@
                                     <tr class="border-b border-gray-300 last:border-b-0 dark:border-gray-700">
                                         <td class="px-3 py-2">{{ $emails[$consent->user_id] ?? $consent->user_id }}</td>
                                         <td class="px-3 py-2 text-gray-500 dark:text-gray-400">{{ $consent->consented_at?->format('Y-m-d H:i') }}</td>
-                                        <td class="px-3 py-2 font-mono text-xs text-gray-500 dark:text-gray-400">{{ $consent->ip ?? '—' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

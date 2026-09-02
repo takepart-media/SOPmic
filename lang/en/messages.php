@@ -91,7 +91,6 @@ return [
             'history_hash' => 'Hash',
             'audit' => 'Consents',
             'audit_user' => 'User',
-            'audit_ip' => 'IP address',
             'audit_consented_at' => 'Consented at',
             'audit_empty' => 'No consents recorded for this version yet.',
         ],

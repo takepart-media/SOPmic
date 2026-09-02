@@ -91,7 +91,6 @@ return [
             'history_hash' => 'Hash',
             'audit' => 'Zustimmungen',
             'audit_user' => 'Benutzer',
-            'audit_ip' => 'IP-Adresse',
             'audit_consented_at' => 'Bestätigt am',
             'audit_empty' => 'Für diese Version liegen noch keine Zustimmungen vor.',
         ],
