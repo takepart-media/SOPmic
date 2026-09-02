@@ -38,6 +38,44 @@
     @error('content')
         <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
     @enderror
+
+    <details class="mt-2">
+        <summary class="cursor-pointer text-xs text-gray-500 underline dark:text-gray-400">
+            {{ __('sop::messages.crud.form.cheatsheet_title') }}
+        </summary>
+        <div class="mt-2 overflow-x-auto rounded-lg border border-gray-300 dark:border-gray-700">
+            <table class="w-full text-xs">
+                <thead>
+                    <tr class="border-b border-gray-300 bg-gray-50 text-left dark:border-gray-700 dark:bg-gray-900">
+                        <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.cheatsheet_syntax') }}</th>
+                        <th class="px-3 py-2 font-medium text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.cheatsheet_result') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ([
+                        '# Text' => __('sop::messages.crud.form.cheatsheet_heading'),
+                        '## Text' => __('sop::messages.crud.form.cheatsheet_subheading'),
+                        '**Text**' => __('sop::messages.crud.form.cheatsheet_bold'),
+                        '*Text*' => __('sop::messages.crud.form.cheatsheet_italic'),
+                        '~~Text~~' => __('sop::messages.crud.form.cheatsheet_strikethrough'),
+                        '- Text' => __('sop::messages.crud.form.cheatsheet_list'),
+                        '1. Text' => __('sop::messages.crud.form.cheatsheet_ordered_list'),
+                        '- [ ] Text' => __('sop::messages.crud.form.cheatsheet_task'),
+                        '[Text](https://example.com)' => __('sop::messages.crud.form.cheatsheet_link'),
+                        '> Text' => __('sop::messages.crud.form.cheatsheet_quote'),
+                        '`Text`' => __('sop::messages.crud.form.cheatsheet_code'),
+                        '| A | B |' => __('sop::messages.crud.form.cheatsheet_table'),
+                        '---' => __('sop::messages.crud.form.cheatsheet_rule'),
+                    ] as $syntax => $result)
+                        <tr class="border-b border-gray-300 last:border-b-0 dark:border-gray-700">
+                            <td class="whitespace-nowrap px-3 py-2 font-mono">{{ $syntax }}</td>
+                            <td class="px-3 py-2 text-gray-500 dark:text-gray-400">{{ $result }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </details>
 </div>
 
 <div class="mb-4">
