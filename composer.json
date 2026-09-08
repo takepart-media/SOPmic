@@ -2,7 +2,16 @@
     "name": "takepart-media/statamic-sop",
     "description": "Global SOP consent gate for the Statamic Control Panel.",
     "type": "statamic-addon",
-    "license": "proprietary",
+    "license": "MIT",
+    "keywords": [
+        "statamic",
+        "statamic-addon",
+        "sop",
+        "consent",
+        "compliance",
+        "audit",
+        "control-panel"
+    ],
     "authors": [
         {
             "name": "takepart media",
@@ -12,7 +21,9 @@
         }
     ],
     "support": {
-        "email": "it@takepart-media.de"
+        "email": "it@takepart-media.de",
+        "issues": "https://github.com/takepart-media/SOPmic/issues",
+        "source": "https://github.com/takepart-media/SOPmic"
     },
     "require": {
         "php": "^8.2",

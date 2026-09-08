@@ -1,6 +1,21 @@
 # Statamic SOP
 
-A global SOP (Standard Operating Procedure) consent gate for the Statamic 6 control panel. After logging in, users must read and confirm every active SOP, one at a time, before they can use the CP normally. Any content change to an SOP creates a new, immutable version and invalidates existing consents for it — the addon keeps a full, revision-safe audit trail of who agreed to what, and when.
+> A global SOP (Standard Operating Procedure) consent gate for the Statamic control panel: users must read and confirm every active SOP before they can work in the CP — with immutable versioning, forced re-consent on changes, and a revision-safe audit trail.
+
+[![Latest Version](https://img.shields.io/packagist/v/takepart-media/statamic-sop.svg?style=flat-square)](https://packagist.org/packages/takepart-media/statamic-sop)
+[![Total Downloads](https://img.shields.io/packagist/dt/takepart-media/statamic-sop.svg?style=flat-square)](https://packagist.org/packages/takepart-media/statamic-sop)
+[![License](https://img.shields.io/packagist/l/takepart-media/statamic-sop.svg?style=flat-square)](LICENSE)
+
+## Features
+
+- **Sequential consent gate** — after login, pending SOPs are presented one at a time ("SOP 1 of 3"); the CP stays locked until all are confirmed. Direct URLs, reloads, the back button, parallel tabs and replayed requests cannot skip ahead.
+- **Immutable versioning & re-consent** — every content change creates a new version; existing consents are invalidated and users must confirm again. Consents always reference the exact version text.
+- **Revision-safe audit trail** — see who consented to which version, and when, even after later edits or deletion.
+- **Own SQLite database** — SOPs and consents live in a dedicated `sop` connection, fully separate from your content and set up automatically.
+- **Bypass rules** — super admins always bypass; additional roles and groups are configurable per project.
+- **Fail-safe by design** — bypass is resolved without touching the SOP database, a broken database blocks the CP instead of silently unlocking it, and idempotent transactional writes make double-clicks and races harmless.
+- **Native CP integration** — feels like part of Statamic: nav item, `manage sops` permission in the Roles UI, light & dark mode, English and German translations.
+- **Tested** — 100+ tests covering the gate, sequencing, versioning, bypass, security and regressions.
 
 ## Requirements
 
@@ -115,3 +130,11 @@ The gate uses `Router::prependMiddlewareToGroup()` from `bootAddon()`, which run
 ## Uninstalling
 
 Removing the package (`composer remove takepart-media/statamic-sop`) is enough to disable the gate and remove the CP screens. The SQLite database at `storage/app/sop/sop.sqlite` (or wherever `SOP_DATABASE` points) is **not** deleted automatically — it holds the full consent audit trail. Delete that file by hand once you no longer need the history, or keep it for records.
+
+## Support
+
+Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/takepart-media/SOPmic/issues). See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
+## License
+
+Open source under the [MIT license](LICENSE).
