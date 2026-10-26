@@ -11,7 +11,7 @@ use TakepartMedia\StatamicSop\Models\Sop;
 /**
  * The exclusion fields on the SOP form, driven through HTTP: persistence,
  * server-side sanitizing, the "empty multi-select sends no key" semantics, and
- * the rendering of the selects and the show card. Whether an exclusion
+ * the rendering of the comboboxes and the show card. Whether an exclusion
  * actually waives an SOP is ExclusionTest's job.
  *
  * SOPs are inactive so they never gate the manager driving the requests.
@@ -126,6 +126,51 @@ class SopExclusionCrudTest extends TestCase
     }
 
     #[Test]
+    public function an_explicitly_empty_exclusion_field_clears_the_exclusions()
+    {
+        // The combobox's empty state posts `excluded_x=""` (a string, not an
+        // array) so that "cleared" is distinguishable from "not submitted".
+        $sop = $this->makeSop('Safety', 'Read me.', active: false, extra: [
+            'excluded_users' => [$this->alice->id()],
+            'excluded_roles' => ['editors'],
+            'excluded_groups' => ['staff'],
+        ]);
+
+        $this->actingAs($this->manager)->patch(cp_route('sop.update', $sop), $this->form([
+            'excluded_users' => '',
+            'excluded_roles' => '',
+            'excluded_groups' => '',
+        ]))->assertRedirect(cp_route('sop.index'))->assertSessionHasNoErrors();
+
+        $sop->refresh();
+
+        $this->assertNull($sop->excluded_users);
+        $this->assertNull($sop->excluded_roles);
+        $this->assertNull($sop->excluded_groups);
+    }
+
+    #[Test]
+    public function empty_and_filled_exclusion_fields_can_be_mixed()
+    {
+        $sop = $this->makeSop('Safety', 'Read me.', active: false, extra: [
+            'excluded_users' => [$this->alice->id()],
+            'excluded_roles' => ['editors'],
+        ]);
+
+        $this->actingAs($this->manager)->patch(cp_route('sop.update', $sop), $this->form([
+            'excluded_users' => '',
+            'excluded_roles' => ['reviewers'],
+            'excluded_groups' => ['staff', 'contractors'],
+        ]))->assertRedirect(cp_route('sop.index'))->assertSessionHasNoErrors();
+
+        $sop->refresh();
+
+        $this->assertNull($sop->excluded_users);
+        $this->assertSame(['reviewers'], $sop->excluded_roles);
+        $this->assertSame(['staff', 'contractors'], $sop->excluded_groups);
+    }
+
+    #[Test]
     public function unknown_users_roles_and_groups_are_dropped_silently()
     {
         $this->actingAs($this->manager)->post(cp_route('sop.store'), $this->form([
@@ -153,19 +198,42 @@ class SopExclusionCrudTest extends TestCase
     }
 
     #[Test]
-    public function the_create_form_renders_the_exclusion_selects()
+    public function the_create_form_renders_the_exclusion_comboboxes()
     {
-        $this->actingAs($this->manager)
+        $html = $this->actingAs($this->manager)
             ->get(cp_route('sop.create'))
             ->assertOk()
             ->assertSee(__('sop::messages.crud.form.exclusions_heading'))
             ->assertSee(__('sop::messages.crud.form.exclusions_hint'))
-            ->assertSee('name="excluded_users[]"', false)
-            ->assertSee('name="excluded_roles[]"', false)
-            ->assertSee('name="excluded_groups[]"', false)
-            ->assertSee('alice@example.com')
-            ->assertSee('editors')
-            ->assertSee('contractors');
+            ->assertSee('<sop-multi-select', false)
+            ->assertSee('name="excluded_users"', false)
+            ->assertSee('name="excluded_roles"', false)
+            ->assertSee('name="excluded_groups"', false)
+            ->assertSee('placeholder="'.e(__('sop::messages.crud.form.exclusions_placeholder')).'"', false)
+            ->assertDontSee('<select', false)
+            ->getContent();
+
+        $users = $this->propFor($html, 'excluded_users', 'options');
+        $roles = $this->propFor($html, 'excluded_roles', 'options');
+        $groups = $this->propFor($html, 'excluded_groups', 'options');
+
+        // The <ui-combobox> option shape, values as strings, sorted by label.
+        $this->assertContains(['value' => (string) $this->alice->id(), 'label' => 'alice@example.com'], $users);
+        $this->assertSame(
+            ['alice@example.com', 'bob@example.com', 'manager@example.com'],
+            array_column($users, 'label')
+        );
+        $this->assertContains(['value' => 'editors', 'label' => Role::find('editors')->title()], $roles);
+        $this->assertContains(['value' => 'contractors', 'label' => UserGroup::find('contractors')->title()], $groups);
+
+        foreach ([$users, $roles, $groups] as $options) {
+            foreach ($options as $option) {
+                $this->assertIsString($option['value']);
+                $this->assertIsString($option['label']);
+            }
+        }
+
+        $this->assertSame([], $this->propFor($html, 'excluded_users', 'initial'));
     }
 
     #[Test]
@@ -179,26 +247,48 @@ class SopExclusionCrudTest extends TestCase
         $html = $this->actingAs($this->manager)
             ->get(cp_route('sop.edit', $sop))
             ->assertOk()
-            ->assertSee('name="excluded_groups[]"', false)
+            ->assertSee('name="excluded_groups"', false)
             ->getContent();
 
-        $this->assertMatchesRegularExpression('/<option value="'.preg_quote($this->alice->id(), '/').'"\s+selected/', $html);
-        $this->assertMatchesRegularExpression('/<option value="editors"\s+selected/', $html);
-        $this->assertDoesNotMatchRegularExpression('/<option value="'.preg_quote($this->bob->id(), '/').'"\s+selected/', $html);
-        $this->assertDoesNotMatchRegularExpression('/<option value="reviewers"\s+selected/', $html);
+        $this->assertSame([(string) $this->alice->id()], $this->propFor($html, 'excluded_users', 'initial'));
+        $this->assertSame(['editors'], $this->propFor($html, 'excluded_roles', 'initial'));
+        $this->assertSame([], $this->propFor($html, 'excluded_groups', 'initial'));
     }
 
     #[Test]
-    public function an_empty_choice_list_renders_a_hint_instead_of_an_empty_select()
+    public function a_failed_submit_redisplays_the_posted_exclusions()
+    {
+        $this->actingAs($this->manager)
+            ->from(cp_route('sop.create'))
+            ->post(cp_route('sop.store'), [
+                'title' => '',
+                'content' => 'Read me.',
+                'excluded_roles' => ['editors'],
+                'excluded_groups' => '',
+            ])
+            ->assertRedirect(cp_route('sop.create'))
+            ->assertSessionHasErrors(['title']);
+
+        $html = $this->actingAs($this->manager)
+            ->get(cp_route('sop.create'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertSame(['editors'], $this->propFor($html, 'excluded_roles', 'initial'));
+        $this->assertSame([], $this->propFor($html, 'excluded_groups', 'initial'));
+    }
+
+    #[Test]
+    public function an_empty_choice_list_renders_a_hint_instead_of_an_empty_combobox()
     {
         $this->setTestUserGroups([]);
 
         $this->actingAs($this->manager)
             ->get(cp_route('sop.create'))
             ->assertOk()
-            ->assertDontSee('name="excluded_groups[]"', false)
+            ->assertDontSee('name="excluded_groups"', false)
             ->assertSee(__('sop::messages.crud.form.none_available'))
-            ->assertSee('name="excluded_roles[]"', false);
+            ->assertSee('name="excluded_roles"', false);
     }
 
     #[Test]
@@ -230,5 +320,27 @@ class SopExclusionCrudTest extends TestCase
             // The heading markup, not the bare string: Statamic dumps every
             // translation into the page's JS config.
             ->assertDontSee('<h2 class="mb-2 text-lg font-medium">'.__('sop::messages.crud.show.exclusions').'</h2>', false);
+    }
+
+    /**
+     * Decodes the `:prop="..."` binding of the <sop-multi-select> for the
+     * given field. Js::from() emits either a bare `[]` or
+     * `JSON.parse('<JSON re-encoded as a JS string literal>')`.
+     */
+    private function propFor(string $html, string $field, string $prop): array
+    {
+        $pattern = '/<sop-multi-select\s[^>]*name="'.preg_quote($field, '/').'"[^>]*\s:'.preg_quote($prop, '/').'="(\[\]|JSON\.parse\(\'(.*?)\'\))"/s';
+
+        $this->assertMatchesRegularExpression($pattern, $html, "No :{$prop} binding found for {$field}.");
+
+        preg_match($pattern, $html, $matches);
+
+        if ($matches[1] === '[]') {
+            return [];
+        }
+
+        $json = json_decode('"'.$matches[2].'"', flags: JSON_THROW_ON_ERROR);
+
+        return json_decode($json, true, flags: JSON_THROW_ON_ERROR);
     }
 }

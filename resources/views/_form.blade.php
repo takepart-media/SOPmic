@@ -110,12 +110,25 @@
     <h2 class="mb-1 text-sm font-medium">{{ __('sop::messages.crud.form.exclusions_heading') }}</h2>
     <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.exclusions_hint') }}</p>
 
+    {{--
+        <sop-multi-select> is registered by resources/js/cp.js and wraps
+        Statamic's searchable <ui-combobox>; it posts `field[]` per selected
+        value, or a single empty `field` when nothing is selected. Options and
+        initial values must be strings — the combobox matches with ===.
+        Attribute names are kebab-case because the browser lowercases them
+        before Vue compiles this page as a template.
+    --}}
     @foreach ([
         'excluded_users' => $users,
         'excluded_roles' => $roles,
         'excluded_groups' => $groups,
     ] as $field => $options)
-        @php $selected = array_map('strval', (array) old($field, $sop->{$field} ?? [])); @endphp
+        @php
+            $selected = array_values(array_filter(
+                array_map('strval', (array) old($field, $sop->{$field} ?? [])),
+                fn (string $value) => $value !== ''
+            ));
+        @endphp
 
         <div class="mb-4">
             <label for="{{ $field }}" class="mb-1 block text-sm font-medium">
@@ -124,17 +137,13 @@
             @if (count($options) === 0)
                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.none_available') }}</p>
             @else
-                <select
-                    name="{{ $field }}[]"
-                    id="{{ $field }}"
-                    multiple
-                    size="6"
-                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                >
-                    @foreach ($options as $value => $label)
-                        <option value="{{ $value }}" @selected(in_array((string) $value, $selected, true))>{{ $label }}</option>
-                    @endforeach
-                </select>
+                <sop-multi-select
+                    name="{{ $field }}"
+                    input-id="{{ $field }}"
+                    :options="{{ \Illuminate\Support\Js::from(array_values($options)) }}"
+                    :initial="{{ \Illuminate\Support\Js::from($selected) }}"
+                    placeholder="{{ __('sop::messages.crud.form.exclusions_placeholder') }}"
+                ></sop-multi-select>
             @endif
             @error($field)
                 <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>

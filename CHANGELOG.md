@@ -4,6 +4,21 @@ All notable changes to this addon are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-10-26
+
+### Changed
+
+- The exclusion fields on the SOP create/edit form now use Statamic's native searchable combobox (`<ui-combobox>`, multiple selection with search, badges and a clear button) instead of native `<select multiple>` lists.
+- An explicitly emptied exclusion field is now posted as an empty value (`excluded_users=""`) and treated as "cleared", exactly like an absent field.
+
+### Added
+
+- Published control panel script asset (`resources/js/cp.js` → `public/vendor/statamic-sop/js/cp.js`, publish tag `sop`) that registers the `<sop-multi-select>` component. `php please sop:install` now publishes it as well.
+
+### Upgrade notes
+
+- After updating, run `php please sop:install` or `php artisan vendor:publish --tag=sop --force` so the control panel script is published. Without it, the exclusion fields on the SOP form do not render.
+
 ## [1.2.0] - 2026-10-26
 
 ### Added
@@ -34,6 +49,7 @@ All notable changes to this addon are documented here. The format follows
 - German and English translations, light and dark mode support.
 - Test suite: 104 tests covering installation, CRUD, versioning, sequencing, bypass, gate coverage, security and regressions.
 
+[1.2.1]: https://github.com/takepart-media/SOPmic/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/takepart-media/SOPmic/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/takepart-media/SOPmic/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/takepart-media/SOPmic/releases/tag/v1.0.0

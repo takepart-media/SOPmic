@@ -50,6 +50,28 @@ class InstallCommandTest extends TestCase
         $this->assertTrue(Schema::connection('sop')->hasTable('sops'));
     }
 
+    #[Test]
+    public function it_publishes_the_control_panel_script()
+    {
+        $published = public_path('vendor/statamic-sop/js/cp.js');
+
+        @unlink($published);
+
+        $this->artisan('statamic:sop:install')->assertSuccessful();
+
+        $this->assertFileExists($published);
+        $this->assertFileEquals(__DIR__.'/../resources/js/cp.js', $published);
+    }
+
+    #[Test]
+    public function the_control_panel_script_is_registered_with_statamic()
+    {
+        $scripts = \Statamic\Statamic::availableScripts(request());
+
+        $this->assertArrayHasKey('statamic-sop', $scripts);
+        $this->assertMatchesRegularExpression('/^cp\.js\?v=[0-9a-f]{32}$/', $scripts['statamic-sop'][0]);
+    }
+
     private function dropSopTables(): void
     {
         $schema = Schema::connection('sop');

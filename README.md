@@ -29,7 +29,7 @@
 composer require takepart-media/statamic-sop
 ```
 
-Then either run the install command, which creates the SOP database, runs the addon's migrations, and publishes `config/sop.php`:
+Then either run the install command, which creates the SOP database, runs the addon's migrations, publishes `config/sop.php` and publishes the addon's control panel script to `public/vendor/statamic-sop/js/cp.js`:
 
 ```bash
 php please sop:install
@@ -40,7 +40,10 @@ or do the same steps by hand:
 ```bash
 php artisan migrate --database=sop --path=vendor/takepart-media/statamic-sop/database/migrations --realpath
 php artisan vendor:publish --tag=sop-config
+php artisan vendor:publish --tag=sop --force
 ```
+
+The control panel script is also re-published automatically whenever Statamic's own `statamic:install` runs (the default Statamic skeleton does this on every `composer install`/`update`). After updating the addon, run `php please sop:install` (or the `--tag=sop --force` publish above) so the CP picks up the new script.
 
 SOPs and consents live in their own SQLite database at `storage/app/sop/sop.sqlite` by default (see Configuration below) — a dedicated connection called `sop`, separate from the project's primary database.
 
@@ -111,7 +114,7 @@ Every time an SOP is saved, its title and content are hashed together (`sha256(t
 
 ## Per-SOP exclusions
 
-The SOP create/edit form has an "Exclusions" section with three multi-selects: users, roles and groups. For everyone in the selection, **that one SOP** is not served — neither by the gate nor in the consent flow, and it does not count towards "SOP 1 of 3". Leave all three empty (the default) and the SOP applies to everyone. A user matches if they are listed, hold a listed role (including roles inherited via a group), or belong to a listed group.
+The SOP create/edit form has an "Exclusions" section with three searchable multi-selects (Statamic's native combobox): users, roles and groups. For everyone in the selection, **that one SOP** is not served — neither by the gate nor in the consent flow, and it does not count towards "SOP 1 of 3". Leave all three empty (the default) and the SOP applies to everyone. A user matches if they are listed, hold a listed role (including roles inherited via a group), or belong to a listed group.
 
 How this differs from the global `bypass` config: `bypass` exempts users from the *entire* gate, while an exclusion only waives a single SOP — all other active SOPs still apply. Only existing users, roles and groups can be selected; unknown values are dropped on save.
 

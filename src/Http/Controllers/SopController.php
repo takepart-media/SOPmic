@@ -20,6 +20,8 @@ use TakepartMedia\StatamicSop\Support\SopPublisher;
  */
 class SopController extends CpController
 {
+    private const EXCLUSION_FIELDS = ['excluded_users', 'excluded_roles', 'excluded_groups'];
+
     public function index()
     {
         // withCount rather than a per-row query: one extra correlated
@@ -129,9 +131,24 @@ class SopController extends CpController
      * `$request->validate()` would silently omit it and SopPublisher::update()
      * would then leave whatever the flag already was untouched. Reading it via
      * `boolean()` instead guarantees every save states it explicitly.
+     *
+     * Exclusion fields contract (see resources/js/cp.js):
+     *   - `excluded_x[]=...`  → the selection (array of strings)
+     *   - `excluded_x=""`     → explicitly cleared (the empty-state hidden
+     *                           input; may arrive as null after Laravel's
+     *                           ConvertEmptyStringsToNull)
+     *   - key absent          → also cleared, same trap as the checkbox
+     * '' and null are normalized to [] before validation, so the `array` rule
+     * still rejects any other scalar.
      */
     private function validated(Request $request): array
     {
+        foreach (self::EXCLUSION_FIELDS as $field) {
+            if (in_array($request->input($field), ['', null], true)) {
+                $request->merge([$field => []]);
+            }
+        }
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
@@ -157,49 +174,43 @@ class SopController extends CpController
         $data['active'] = $request->boolean('active');
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
-        // Same trap as the checkbox: a multi-select with nothing selected sends
-        // no key at all, which must mean "cleared", not "leave untouched".
         // Anything that is not a currently existing user/role/group is dropped
         // silently — a stale or tampered value must not end up stored.
         $choices = $this->exclusionChoices();
 
-        $data['excluded_users'] = array_values(array_intersect(
-            (array) $request->input('excluded_users', []),
-            array_map('strval', array_keys($choices['users']))
-        ));
-        $data['excluded_roles'] = array_values(array_intersect(
-            (array) $request->input('excluded_roles', []),
-            array_map('strval', array_keys($choices['roles']))
-        ));
-        $data['excluded_groups'] = array_values(array_intersect(
-            (array) $request->input('excluded_groups', []),
-            array_map('strval', array_keys($choices['groups']))
-        ));
+        foreach (['users', 'roles', 'groups'] as $kind) {
+            $field = "excluded_{$kind}";
+
+            $data[$field] = array_values(array_intersect(
+                (array) $request->input($field, []),
+                array_column($choices[$kind], 'value')
+            ));
+        }
 
         return $data;
     }
 
     /**
-     * What the exclusion multi-selects offer (and, equally, the only values the
-     * server accepts): users as id => email, roles and groups as handle => title.
+     * What the exclusion comboboxes offer (and, equally, the only values the
+     * server accepts), as lists of `['value' => ..., 'label' => ...]` sorted
+     * by label — the option shape <ui-combobox> expects. Users are
+     * id => email, roles and groups handle => title. Everything is cast to
+     * string: the combobox compares values with ===.
      *
-     * @return array{users: array<string, string>, roles: array<string, string>, groups: array<string, string>}
+     * @return array{users: list<array{value: string, label: string}>, roles: list<array{value: string, label: string}>, groups: list<array{value: string, label: string}>}
      */
     private function exclusionChoices(): array
     {
+        $toOptions = fn ($items, callable $value, callable $label) => collect($items)
+            ->map(fn ($item) => ['value' => (string) $value($item), 'label' => (string) $label($item)])
+            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->all();
+
         return [
-            'users' => User::all()
-                ->mapWithKeys(fn ($user) => [(string) $user->id() => (string) $user->email()])
-                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-                ->all(),
-            'roles' => Role::all()
-                ->mapWithKeys(fn ($role) => [(string) $role->handle() => (string) $role->title()])
-                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-                ->all(),
-            'groups' => UserGroup::all()
-                ->mapWithKeys(fn ($group) => [(string) $group->handle() => (string) $group->title()])
-                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-                ->all(),
+            'users' => $toOptions(User::all(), fn ($user) => $user->id(), fn ($user) => $user->email()),
+            'roles' => $toOptions(Role::all(), fn ($role) => $role->handle(), fn ($role) => $role->title()),
+            'groups' => $toOptions(UserGroup::all(), fn ($group) => $group->handle(), fn ($group) => $group->title()),
         ];
     }
 }

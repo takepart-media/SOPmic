@@ -21,6 +21,18 @@ class ServiceProvider extends AddonServiceProvider
     ];
 
     /**
+     * Registers <sop-multi-select> (the exclusion combobox on the SOP form).
+     * The parent publishes it under the addon slug as publish tag `sop` to
+     * public/vendor/statamic-sop/js/cp.js and renders it as a
+     * deferred CP script. Because this list is non-empty, the parent also
+     * re-publishes that tag after `statamic:install` (see
+     * bootPublishAfterInstall()); InstallCommand publishes it as well.
+     */
+    protected $scripts = [
+        __DIR__.'/../resources/js/cp.js',
+    ];
+
+    /**
      * Without this the namespace would default to the composer package name
      * (`statamic-sop::`). The addon slug is what the config key and publish
      * tags already use, so views follow it.

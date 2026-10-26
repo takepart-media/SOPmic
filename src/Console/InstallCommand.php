@@ -10,8 +10,9 @@ use TakepartMedia\StatamicSop\Support\SopDatabase;
 
 /**
  * One-shot bootstrapping for a fresh install: makes sure the SQLite file
- * exists, runs the addon's own migrations against the `sop` connection, and
- * publishes the config so bypass roles/groups can be edited in the project.
+ * exists, runs the addon's own migrations against the `sop` connection,
+ * publishes the config so bypass roles/groups can be edited in the project,
+ * and publishes the control panel script (re-run after updates).
  *
  * `RunsInPlease` is what makes `php please sop:install` resolve at all — the
  * Please application only strips the `statamic:` prefix for commands that use
@@ -24,7 +25,7 @@ class InstallCommand extends Command
 
     protected $signature = 'statamic:sop:install';
 
-    protected $description = 'Install the SOP addon (create the database, run migrations, publish the config).';
+    protected $description = 'Install the SOP addon (create the database, run migrations, publish the config and CP assets).';
 
     public function handle(): int
     {
@@ -54,6 +55,16 @@ class InstallCommand extends Command
         $this->call(VendorPublishCommand::class, [
             '--tag' => 'sop-config',
             '--force' => false,
+        ]);
+
+        // The `sop` tag only holds the CP script (config and translations
+        // have their own `sop-config` / `sop-translations` tags), so forcing
+        // it is safe and makes a re-run after an update refresh the asset.
+        $this->line('  Publishing control panel assets...');
+
+        $this->call(VendorPublishCommand::class, [
+            '--tag' => 'sop',
+            '--force' => true,
         ]);
 
         $this->info('Done. Set bypass roles/groups in config/sop.php if needed.');
