@@ -38,7 +38,7 @@ class SopConsentController extends CpController
 
         $sop = $pending->first();
         $version = $sop->currentVersion;
-        $total = $status->totalRequiredCount();
+        $total = $status->requiredCountFor($user);
 
         return view('sop::consent', [
             'sop' => $sop,

@@ -4,6 +4,16 @@ All notable changes to this addon are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-10-26
+
+### Added
+
+- Per-SOP exclusions: individual users, roles and groups can be exempted from a single SOP in the SOP create/edit form. Excluded users are neither gated by that SOP nor shown it in the consent flow. Changing exclusions does not create a new version or trigger re-consent.
+
+### Upgrade notes
+
+- Run `php artisan migrate` (against the `sop` connection) or `php please sop:install` after updating to add the new exclusion columns.
+
 ## [1.1.0] - 2026-09-08
 
 ### Added
@@ -24,5 +34,6 @@ All notable changes to this addon are documented here. The format follows
 - German and English translations, light and dark mode support.
 - Test suite: 104 tests covering installation, CRUD, versioning, sequencing, bypass, gate coverage, security and regressions.
 
+[1.2.0]: https://github.com/takepart-media/SOPmic/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/takepart-media/SOPmic/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/takepart-media/SOPmic/releases/tag/v1.0.0

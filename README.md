@@ -13,6 +13,7 @@
 - **Revision-safe audit trail** — see who consented to which version, and when, even after later edits or deletion.
 - **Own SQLite database** — SOPs and consents live in a dedicated `sop` connection, fully separate from your content and set up automatically.
 - **Bypass rules** — super admins always bypass; additional roles and groups are configurable per project.
+- **Per-SOP exclusions** — exempt individual users, roles or groups from a single SOP right in the SOP form, without touching the global bypass.
 - **Fail-safe by design** — bypass is resolved without touching the SOP database, a broken database blocks the CP instead of silently unlocking it, and idempotent transactional writes make double-clicks and races harmless.
 - **Native CP integration** — feels like part of Statamic: nav item, `manage sops` permission in the Roles UI, light & dark mode, English and German translations.
 - **Tested** — 100+ tests covering the gate, sequencing, versioning, bypass, security and regressions.
@@ -107,6 +108,16 @@ Every time an SOP is saved, its title and content are hashed together (`sha256(t
 - Changing **either** the title or the content bumps the version and invalidates existing consents — a title change is treated the same as a content change, since it's the simplest rule to defend when someone asks exactly what a user agreed to.
 - Toggling `active` or `sort_order` alone does **not** create a new version — nothing was agreed to changes.
 - The audit trail (an SOP's "show" screen in the CP) always displays the exact text that was current for each version, so past consents remain verifiable even after later edits.
+
+## Per-SOP exclusions
+
+The SOP create/edit form has an "Exclusions" section with three multi-selects: users, roles and groups. For everyone in the selection, **that one SOP** is not served — neither by the gate nor in the consent flow, and it does not count towards "SOP 1 of 3". Leave all three empty (the default) and the SOP applies to everyone. A user matches if they are listed, hold a listed role (including roles inherited via a group), or belong to a listed group.
+
+How this differs from the global `bypass` config: `bypass` exempts users from the *entire* gate, while an exclusion only waives a single SOP — all other active SOPs still apply. Only existing users, roles and groups can be selected; unknown values are dropped on save.
+
+Changing exclusions never creates a new version and never asks anyone to re-consent — who an SOP applies to is not part of what it says. Existing consents are kept for the audit trail; if an exclusion is removed later, a prior consent to the unchanged version still counts. Exclusions affect the gate and consent flow only, not who may open the management screens (that is `manage sops`).
+
+When updating from an earlier version, run `php artisan migrate --database=sop --path=vendor/takepart-media/statamic-sop/database/migrations --realpath` or `php please sop:install` once to add the new columns.
 
 ## Gate behavior
 

@@ -112,13 +112,14 @@ abstract class TestCase extends AddonTestCase
         $this->app->forgetScopedInstances();
     }
 
-    protected function makeSop(string $title, string $content, int $sortOrder = 0, bool $active = true): Sop
+    protected function makeSop(string $title, string $content, int $sortOrder = 0, bool $active = true, array $extra = []): Sop
     {
         return app(SopPublisher::class)->create([
             'title' => $title,
             'content' => $content,
             'sort_order' => $sortOrder,
             'active' => $active,
+            ...$extra,
         ]);
     }
 }

@@ -20,7 +20,8 @@ class SopStatus
     /** @var array<string, Collection<int, Sop>> */
     private array $pending = [];
 
-    private ?int $total = null;
+    /** @var array<string, int> */
+    private array $required = [];
 
     /**
      * @return Collection<int, Sop>
@@ -31,7 +32,7 @@ class SopStatus
             return collect();
         }
 
-        return $this->pending[$userId] ??= $this->freshPendingForUserId($userId);
+        return $this->pending[$userId] ??= $this->freshPendingFor($user);
     }
 
     public function firstPendingFor(?User $user): ?Sop
@@ -40,22 +41,36 @@ class SopStatus
     }
 
     /**
-     * Every SOP the gate enforces, consented or not — the denominator of
-     * "SOP x of y".
+     * Every SOP the gate enforces for this user, consented or not — the
+     * denominator of "SOP x of y". Per user, because exclusions make the set
+     * differ from one user to the next.
      */
-    public function totalRequiredCount(): int
+    public function requiredCountFor(?User $user): int
     {
-        return $this->total ??= Sop::query()->active()->count();
+        if (! $userId = $this->userId($user)) {
+            return 0;
+        }
+
+        return $this->required[$userId] ??= Sop::query()
+            ->active()
+            ->get()
+            ->reject(fn (Sop $sop) => $sop->isExcludedFor($user))
+            ->count();
     }
 
     /**
      * Bypasses the memo. Used inside the consent transaction, where a value
      * read before the write would defeat the point.
      *
+     * Exclusions are applied in PHP: roles and groups live in Statamic's flat
+     * files, out of reach of the query.
+     *
      * @return Collection<int, Sop>
      */
-    public function freshPendingForUserId(string $userId): Collection
+    public function freshPendingFor(User $user): Collection
     {
+        $userId = (string) $user->id();
+
         return Sop::query()
             ->active()
             ->with('currentVersion')
@@ -67,13 +82,15 @@ class SopStatus
             })
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->reject(fn (Sop $sop) => $sop->isExcludedFor($user))
+            ->values();
     }
 
     public function forget(): void
     {
         $this->pending = [];
-        $this->total = null;
+        $this->required = [];
     }
 
     private function userId(?User $user): ?string

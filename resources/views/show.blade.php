@@ -50,6 +50,31 @@
             <p class="mb-8 text-sm text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.no_version') }}</p>
         @endif
 
+        {{-- Exclusions: only worth a card when somebody is actually waived. --}}
+        @if ($excludedUsers || $excludedRoles || $excludedGroups)
+            <h2 class="mb-2 text-lg font-medium">{{ __('sop::messages.crud.show.exclusions') }}</h2>
+            <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.show.exclusions_hint') }}</p>
+
+            <div class="mb-8 overflow-x-auto rounded-lg border border-gray-300 dark:border-gray-700">
+                <table class="w-full text-sm">
+                    <tbody>
+                        @foreach ([
+                            'exclusions_users' => $excludedUsers,
+                            'exclusions_roles' => $excludedRoles,
+                            'exclusions_groups' => $excludedGroups,
+                        ] as $labelKey => $items)
+                            @if ($items)
+                                <tr class="border-b border-gray-300 last:border-b-0 dark:border-gray-700">
+                                    <th class="w-48 bg-gray-50 px-3 py-2 text-left font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">{{ __('sop::messages.crud.show.'.$labelKey) }}</th>
+                                    <td class="px-3 py-2">{{ implode(', ', $items) }}</td>
+                                </tr>
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
         {{-- Version history --}}
         <h2 class="mb-2 text-lg font-medium">{{ __('sop::messages.crud.show.history') }}</h2>
 

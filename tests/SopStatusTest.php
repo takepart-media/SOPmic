@@ -43,7 +43,7 @@ class SopStatusTest extends TestCase
         );
 
         $this->assertSame('First', $this->status->firstPendingFor($user)->title);
-        $this->assertSame(3, $this->status->totalRequiredCount());
+        $this->assertSame(3, $this->status->requiredCountFor($user));
     }
 
     #[Test]
@@ -69,7 +69,7 @@ class SopStatusTest extends TestCase
         $this->assertSame(['Second'], $this->status->pendingFor($user)->pluck('title')->all());
 
         // Still part of the denominator.
-        $this->assertSame(2, $this->status->totalRequiredCount());
+        $this->assertSame(2, $this->status->requiredCountFor($user));
     }
 
     #[Test]
@@ -124,7 +124,7 @@ class SopStatusTest extends TestCase
         $user = $this->makeUser();
 
         $this->assertSame(['Active'], $this->status->pendingFor($user)->pluck('title')->all());
-        $this->assertSame(1, $this->status->totalRequiredCount());
+        $this->assertSame(1, $this->status->requiredCountFor($user));
     }
 
     #[Test]
@@ -135,18 +135,18 @@ class SopStatusTest extends TestCase
         $user = $this->makeUser();
 
         $this->assertCount(1, $this->status->pendingFor($user));
-        $this->assertSame(1, $this->status->totalRequiredCount());
+        $this->assertSame(1, $this->status->requiredCountFor($user));
 
         $this->makeSop('Second', 'b');
 
         // Memo still holds the old answer.
         $this->assertCount(1, $this->status->pendingFor($user));
-        $this->assertSame(1, $this->status->totalRequiredCount());
+        $this->assertSame(1, $this->status->requiredCountFor($user));
 
         $this->status->forget();
 
         $this->assertCount(2, $this->status->pendingFor($user));
-        $this->assertSame(2, $this->status->totalRequiredCount());
+        $this->assertSame(2, $this->status->requiredCountFor($user));
     }
 
     #[Test]

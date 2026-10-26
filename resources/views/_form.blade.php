@@ -6,6 +6,9 @@
 --}}
 @php
     $sop = $sop ?? null;
+    $users = $users ?? [];
+    $roles = $roles ?? [];
+    $groups = $groups ?? [];
 @endphp
 
 <div class="mb-4">
@@ -86,7 +89,7 @@
     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.active_hint') }}</p>
 </div>
 
-<div class="mb-6">
+<div class="mb-4">
     <label for="sort_order" class="mb-1 block text-sm font-medium">
         {{ __('sop::messages.crud.form.sort_order') }}
     </label>
@@ -101,6 +104,46 @@
     @error('sort_order')
         <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
     @enderror
+</div>
+
+<div class="mb-6">
+    <h2 class="mb-1 text-sm font-medium">{{ __('sop::messages.crud.form.exclusions_heading') }}</h2>
+    <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.exclusions_hint') }}</p>
+
+    @foreach ([
+        'excluded_users' => $users,
+        'excluded_roles' => $roles,
+        'excluded_groups' => $groups,
+    ] as $field => $options)
+        @php $selected = array_map('strval', (array) old($field, $sop->{$field} ?? [])); @endphp
+
+        <div class="mb-4">
+            <label for="{{ $field }}" class="mb-1 block text-sm font-medium">
+                {{ __('sop::messages.crud.form.'.$field) }}
+            </label>
+            @if (count($options) === 0)
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('sop::messages.crud.form.none_available') }}</p>
+            @else
+                <select
+                    name="{{ $field }}[]"
+                    id="{{ $field }}"
+                    multiple
+                    size="6"
+                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                >
+                    @foreach ($options as $value => $label)
+                        <option value="{{ $value }}" @selected(in_array((string) $value, $selected, true))>{{ $label }}</option>
+                    @endforeach
+                </select>
+            @endif
+            @error($field)
+                <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+            @error($field.'.*')
+                <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+    @endforeach
 </div>
 
 <div class="flex items-center gap-4">

@@ -4,7 +4,9 @@ namespace TakepartMedia\StatamicSop\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Statamic\Facades\Markdown;
+use Statamic\Facades\Role;
 use Statamic\Facades\User;
+use Statamic\Facades\UserGroup;
 use Statamic\Http\Controllers\CP\CpController;
 use TakepartMedia\StatamicSop\Models\Sop;
 use TakepartMedia\StatamicSop\Models\SopConsent;
@@ -37,7 +39,7 @@ class SopController extends CpController
 
     public function create()
     {
-        return view('sop::create');
+        return view('sop::create', $this->exclusionChoices());
     }
 
     public function store(Request $request, SopPublisher $publisher)
@@ -73,12 +75,27 @@ class SopController extends CpController
             ? Markdown::parse((string) $sop->currentVersion->content)
             : null;
 
+        // Stored values are IDs/handles; resolve them for display and fall
+        // back to the raw value when the user, role or group no longer exists.
+        $excludedUsers = collect($sop->excluded_users ?? [])
+            ->map(fn (string $userId) => User::find($userId)?->email() ?? $userId)
+            ->all();
+        $excludedRoles = collect($sop->excluded_roles ?? [])
+            ->map(fn (string $handle) => Role::find($handle)?->title() ?? $handle)
+            ->all();
+        $excludedGroups = collect($sop->excluded_groups ?? [])
+            ->map(fn (string $handle) => UserGroup::find($handle)?->title() ?? $handle)
+            ->all();
+
         return view('sop::show', [
             'sop' => $sop,
             'versions' => $versions,
             'consentsByVersion' => $consentsByVersion,
             'emails' => $emails,
             'content' => $content,
+            'excludedUsers' => $excludedUsers,
+            'excludedRoles' => $excludedRoles,
+            'excludedGroups' => $excludedGroups,
         ]);
     }
 
@@ -86,7 +103,7 @@ class SopController extends CpController
     {
         $sop->load('currentVersion');
 
-        return view('sop::edit', ['sop' => $sop]);
+        return view('sop::edit', ['sop' => $sop, ...$this->exclusionChoices()]);
     }
 
     public function update(Request $request, Sop $sop, SopPublisher $publisher)
@@ -119,15 +136,70 @@ class SopController extends CpController
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
+            'excluded_users' => ['nullable', 'array'],
+            'excluded_users.*' => ['string'],
+            'excluded_roles' => ['nullable', 'array'],
+            'excluded_roles.*' => ['string'],
+            'excluded_groups' => ['nullable', 'array'],
+            'excluded_groups.*' => ['string'],
         ], [], [
             'title' => __('sop::messages.validation.attributes.title'),
             'content' => __('sop::messages.validation.attributes.content'),
             'sort_order' => __('sop::messages.validation.attributes.sort_order'),
+            'excluded_users' => __('sop::messages.validation.attributes.excluded_users'),
+            'excluded_users.*' => __('sop::messages.validation.attributes.excluded_users'),
+            'excluded_roles' => __('sop::messages.validation.attributes.excluded_roles'),
+            'excluded_roles.*' => __('sop::messages.validation.attributes.excluded_roles'),
+            'excluded_groups' => __('sop::messages.validation.attributes.excluded_groups'),
+            'excluded_groups.*' => __('sop::messages.validation.attributes.excluded_groups'),
         ]);
 
         $data['active'] = $request->boolean('active');
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
+        // Same trap as the checkbox: a multi-select with nothing selected sends
+        // no key at all, which must mean "cleared", not "leave untouched".
+        // Anything that is not a currently existing user/role/group is dropped
+        // silently — a stale or tampered value must not end up stored.
+        $choices = $this->exclusionChoices();
+
+        $data['excluded_users'] = array_values(array_intersect(
+            (array) $request->input('excluded_users', []),
+            array_map('strval', array_keys($choices['users']))
+        ));
+        $data['excluded_roles'] = array_values(array_intersect(
+            (array) $request->input('excluded_roles', []),
+            array_map('strval', array_keys($choices['roles']))
+        ));
+        $data['excluded_groups'] = array_values(array_intersect(
+            (array) $request->input('excluded_groups', []),
+            array_map('strval', array_keys($choices['groups']))
+        ));
+
         return $data;
+    }
+
+    /**
+     * What the exclusion multi-selects offer (and, equally, the only values the
+     * server accepts): users as id => email, roles and groups as handle => title.
+     *
+     * @return array{users: array<string, string>, roles: array<string, string>, groups: array<string, string>}
+     */
+    private function exclusionChoices(): array
+    {
+        return [
+            'users' => User::all()
+                ->mapWithKeys(fn ($user) => [(string) $user->id() => (string) $user->email()])
+                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+                ->all(),
+            'roles' => Role::all()
+                ->mapWithKeys(fn ($role) => [(string) $role->handle() => (string) $role->title()])
+                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+                ->all(),
+            'groups' => UserGroup::all()
+                ->mapWithKeys(fn ($group) => [(string) $group->handle() => (string) $group->title()])
+                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+                ->all(),
+        ];
     }
 }

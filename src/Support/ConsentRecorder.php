@@ -49,7 +49,7 @@ class ConsentRecorder
             $userAgent = null;
         }
 
-        return DB::connection('sop')->transaction(function () use ($userId, $sopId, $sopVersionId, $ip, $userAgent) {
+        return DB::connection('sop')->transaction(function () use ($user, $userId, $sopId, $sopVersionId, $ip, $userAgent) {
             $existing = SopConsent::query()
                 ->where('user_id', $userId)
                 ->where('sop_version_id', $sopVersionId)
@@ -62,7 +62,9 @@ class ConsentRecorder
                 return true;
             }
 
-            $pending = $this->status->freshPendingForUserId($userId)->first();
+            // The full user, not just the id: an SOP this user is excluded
+            // from is never pending, so a consent for it is refused here too.
+            $pending = $this->status->freshPendingFor($user)->first();
 
             if (! $pending || $pending->id !== $sopId) {
                 throw StaleConsentException::notPending($sopId);

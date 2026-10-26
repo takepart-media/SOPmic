@@ -23,6 +23,7 @@ class SopPublisher
                 'title' => $title,
                 'active' => (bool) ($data['active'] ?? false),
                 'sort_order' => (int) ($data['sort_order'] ?? 0),
+                ...$this->exclusions($data),
             ]);
 
             $version = $this->writeVersion($sop, 1, $title, $content, $userId);
@@ -58,10 +59,17 @@ class SopPublisher
                 $sop->sort_order = (int) $data['sort_order'];
             }
 
+            // Who an SOP applies to is not what it says: exclusions stay out of
+            // the hash, so changing them never asks anyone to re-consent.
+            foreach ($this->exclusions($data) as $column => $value) {
+                $sop->{$column} = $value;
+            }
+
             $hash = SopVersion::hash($title, $content);
 
             // An unchanged hash means neither title nor content moved, so only
-            // active/sort_order can have changed — nothing to re-consent to.
+            // active/sort_order/exclusions can have changed — nothing to
+            // re-consent to.
             if (! $current || $current->content_hash !== $hash) {
                 $version = $this->writeVersion(
                     $sop,
@@ -80,6 +88,32 @@ class SopPublisher
 
             return $sop;
         });
+    }
+
+    /**
+     * Only the keys present in $data, so a partial update leaves the others
+     * alone. Empty lists are stored as null — "applies to everyone".
+     *
+     * @return array<string, array<int, string>|null>
+     */
+    private function exclusions(array $data): array
+    {
+        $exclusions = [];
+
+        foreach (['excluded_users', 'excluded_roles', 'excluded_groups'] as $column) {
+            if (! array_key_exists($column, $data)) {
+                continue;
+            }
+
+            $values = array_values(array_unique(array_map('strval', array_filter(
+                (array) $data[$column],
+                fn ($value) => $value !== null && $value !== ''
+            ))));
+
+            $exclusions[$column] = $values === [] ? null : $values;
+        }
+
+        return $exclusions;
     }
 
     private function writeVersion(Sop $sop, int $versionNo, string $title, string $content, ?string $userId): SopVersion
